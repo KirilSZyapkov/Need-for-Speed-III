@@ -1,0 +1,67 @@
+function needForSpeedIII(input) {
+    let numCars = input.shift();
+    let listOfCars = {};
+    for (let a = 0; a < numCars; a++) {
+        let [carName, mileage, fuel] = input.shift().split(`|`);
+        mileage = Number(mileage);
+        fuel = Number(fuel);
+        if (!listOfCars.hasOwnProperty(carName)) {
+            listOfCars[carName] = {
+                [`mileage`]: mileage,
+                [`fuel`]: fuel,
+            }
+        }
+    }
+    let line;
+
+    while ((line = input.shift()) !== "Stop") {
+        let [command, ...params] = line.split(` : `);
+        if (command === "Drive") {
+            let [carName, distance, fuel] = params;
+            distance = Number(distance);
+            fuel = Number(fuel);
+            if (listOfCars.hasOwnProperty(carName) && listOfCars[carName].fuel >= fuel) {
+                listOfCars[carName].mileage += distance;
+                listOfCars[carName].fuel -= fuel;
+                console.log(`${carName} driven for ${distance} kilometers. ${fuel} liters of fuel consumed.`);
+            } else {
+                console.log("Not enough fuel to make that ride");
+            }
+            if (listOfCars[carName].mileage >= 100000) {
+                delete listOfCars[carName];
+                console.log(`Time to sell the ${carName}!`);
+            }
+        } else if (command === "Refuel") {
+            let [carName, fuel] = params;
+            fuel = Number(fuel);
+            let curFuel = listOfCars[carName].fuel;
+            listOfCars[carName].fuel += fuel;
+            if (listOfCars[carName].fuel > 75) {
+                listOfCars[carName].fuel = 75;
+                curFuel = 75 - curFuel;
+                console.log(`${carName} refueled with ${curFuel} liters`);
+            } else {
+                console.log(`${carName} refueled with ${fuel} liters`);
+            }
+        } else if (command === "Revert") {
+            let [carName, kilometers] = params;
+            kilometers = Number(kilometers);
+            listOfCars[carName].mileage -= kilometers;
+            if (listOfCars[carName].mileage < 10000) {
+                listOfCars[carName].mileage = 10000;
+            } else {
+                console.log(`${carName} mileage decreased by ${kilometers} kilometers`);
+            }
+        }
+    }
+    let sorted = Object.entries(listOfCars);
+    sorted.sort((a, b) => {
+        let [nameA, mileageA] = a;
+        let [nameB, mileageB] = b;
+        return mileageB.mileage - mileageA.mileage || nameA.localeCompare(nameB);
+    });
+    sorted.forEach(element=>{
+        let [carName, info] = element;
+        console.log(`${carName} -> Mileage: ${info.mileage} kms, Fuel in the tank: ${info.fuel} lt.`);
+    });
+}
